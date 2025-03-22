@@ -1,14 +1,22 @@
 import React from 'react';
-import { Card, CardContent, Typography, CardMedia, Box, IconButton } from '@mui/material';
+import {
+  Card,
+  CardContent,
+  Typography,
+  CardMedia,
+  Box,
+  IconButton,
+} from '@mui/material';
 import { Bookmark, BookmarkBorder } from '@mui/icons-material';
 import { useDispatch, useSelector } from 'react-redux';
 import { addToWatchlist, removeFromWatchlist } from '../redux/movieSlice';
+import { useNavigate } from 'react-router-dom';
 
 // Define the Movie type based on the data structure expected
 interface Movie {
   id: number;
   title: string;
-  poster_path: string | null;
+  poster_path: string;
   vote_average: number | null;
 }
 
@@ -18,6 +26,7 @@ interface MovieCardProps {
 
 const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   // Access watchlist state from Redux store
   const watchlist = useSelector((state: any) => state.movies.watchlist);
@@ -25,18 +34,18 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
 
   // Handle click for adding/removing movie from watchlist
   const handleWatchlistClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
+    e.stopPropagation(); // Prevent the click from triggering the card's onClick
     if (isInWatchlist) {
-      dispatch(removeFromWatchlist({ ...movie, poster_path: movie.poster_path || '' }));
+      dispatch(removeFromWatchlist(movie));
     } else {
-      dispatch(addToWatchlist({ ...movie, poster_path: movie.poster_path || '' }));
+      dispatch(addToWatchlist(movie));
     }
   };
 
-  // Fallback image when poster_path is null or empty
-  const imageUrl = movie.poster_path
-    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-    : 'https://via.placeholder.com/500x750?text=No+Image';
+  // Handle navigation to movie details page
+  const handleCardClick = () => {
+    navigate(`/movie/${movie.id}`); // Navigate to the MovieDetails page with the movie ID
+  };
 
   return (
     <Card
@@ -47,20 +56,21 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
         boxShadow: 3,
         borderRadius: 2,
         overflow: 'hidden',
-        height: '100%',
+        height: 'auto',
         transition: 'transform 0.2s',
         '&:hover': {
           transform: 'scale(1.05)',
         },
         position: 'relative',
       }}
+      onClick={handleCardClick} // Navigate to MovieDetails on card click
     >
       <CardMedia
         component="img"
-        image={imageUrl}
+        image={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
         alt={movie.title}
         sx={{
-          height: 350,
+          height: 250,
           objectFit: 'cover',
           width: '100%',
         }}
@@ -92,6 +102,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
         </Box>
       </CardContent>
 
+      {/* Watchlist Icon */}
       <IconButton
         onClick={handleWatchlistClick}
         sx={{
@@ -108,3 +119,4 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie }) => {
 };
 
 export default MovieCard;
+
